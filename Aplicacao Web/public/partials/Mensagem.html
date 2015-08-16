@@ -1,0 +1,43 @@
+
+<head> <title> Mensagem</title> 
+	<meta charset="utf-8" /> <!-- <link href="ContatoEstilo.css" rel="stylesheet" media="all" /> <script src="JavaScript1.js"></script>-->
+</head> 
+
+<div 
+	<p ng-show="mensagem.texto" class="alert alert-info">
+    	<strong> 
+    		{{mensagem.texto}}
+    	</strong>
+ 	</p>
+</div>
+
+<form ng-submit
+	<div class="form-group">
+		<label for="nome">Nome completo</label>
+		<input type="text" class="form-control" id="nome" 
+		name="nome" required ng-model="contato.nome">
+	</div>
+
+	<div class="form-group">
+		<label for="email">Email</label>
+		<div class="input-group">
+			<span class="input-group-addon">@</span>
+			<input type="email" class="form-control" id="email" 
+			placeholder="email@exemplo.com" name="email" 
+			ng-model="contato.email" required>
+		</div>
+	</div>
+	<div class="form-group">
+  		<label for="mensagem">Digite a Mensagem:</label>
+  		<textarea type="text" class="form-control" rows="12" id="mensagem" name="mensagem" 
+  		required ng-model="contato.mensagem"></textarea>
+	</div>
+	<div>
+		<button type="submit" ng-click="Enviar(contato)" class="btn btn-primary" >
+			Enviar
+		</button>
+  		
+		<a href="#/" class="btn btn-default">Voltar</a>
+	</div>
+
+</form>

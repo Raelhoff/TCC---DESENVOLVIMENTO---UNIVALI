@@ -1,0 +1,642 @@
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include "spi-driver.h"
+#include "cfaf128128b-0145t.h"
+#include "boris-image.h"
+#include "Fontes.h"
+#include <string.h>
+
+#define pabort(s) {perror(s); abort();}
+
+typedef struct _6bit { int val:6;} uint6_t;
+
+typedef struct _bitDStruct {
+	unsigned int b0:1;
+	unsigned int b1:1;
+	unsigned int b2:1;
+	unsigned int b3:1;
+	unsigned int b4:1;
+	unsigned int b5:1;
+	unsigned int b6:1;
+	unsigned int b7:1;
+} bitDStruct;
+
+typedef struct _pixel { int val:12;} uint12_t;
+
+typedef struct _Transfer {
+	uint8_t data;
+	uint8_t type:1;
+	uint8_t pad:7;
+} Transfer;
+
+char tbufferDisplay[128][128];
+
+int BitRead(char a,int b)
+{
+    int x =0; 
+ 
+    x = (a >> b) & 1; 
+    return x;
+}
+ 
+
+static int initResetPin(){
+	int ret = 0;
+	FILE* ex = fopen("/sys/class/gpio/export","w");
+	fprintf(ex,"49");
+	fclose(ex);
+	
+	if(errno!=0)
+		errno=0;
+		
+	FILE* pindir = fopen("/sys/class/gpio/gpio49/direction","w");
+	fprintf(pindir,"out");
+	fclose(pindir);
+	
+	FILE* pinval = fopen("/sys/class/gpio/gpio49/value","w");
+	fprintf(pinval,"0");
+	fclose(pinval);
+	
+	return ret;
+}
+
+static void resetClear(){
+	FILE* pin = fopen("/sys/class/gpio/gpio49/value","w");
+	fprintf(pin,"0");
+	fclose(pin);
+}
+
+static void resetSet(){
+	FILE* pin = fopen("/sys/class/gpio/gpio49/value","w");
+	fprintf(pin,"1");
+	fclose(pin);
+}
+
+int LCDSendCommand(int len, ...){
+	if(len < 1)
+		return 0;
+
+	va_list ap;
+
+	va_start(ap, len);
+	
+	Transfer *transfer_buffer = (Transfer *)malloc(sizeof(Transfer)*len);
+	int ret = 0;
+	int repack = 0;
+		
+	for(repack=0;repack<len;repack++){
+		int data = va_arg(ap, int);
+		transfer_buffer[repack].data = (uint8_t)data;
+		if(repack==0){
+			transfer_buffer[repack].type=0;
+		}else{
+			transfer_buffer[repack].type=1;
+		}
+	}
+
+	ret = SPIWriteChunk(transfer_buffer, len*sizeof(Transfer));
+	
+	va_end(ap);
+
+	free(transfer_buffer);
+
+	return ret;
+}
+
+void init_tft(int deviceNum) {
+	int ret=0;
+	int SPISpeed = 15000000;
+	ret = initResetPin();
+
+	if(ret == -1){
+		pabort("Unable to initialize reset PIN");
+	}
+	
+	ret = SPIInit(deviceNum, 9, SPISpeed);
+	if(ret < 0){
+		pabort("Unable to initialize SPI");
+	}
+
+	//***************************RESET LCD Driver*******************************
+	// SET RST Pin high
+	resetSet();
+	usleep(1000);
+
+	// SET RST Pin low
+	resetClear();
+	usleep(20000);
+
+	// SET RST Pin high
+	resetSet();
+	usleep(120000);
+
+	LCDSendCommand(1, 0x11); // Sleep out and charge pump on
+	usleep(120000);
+
+	LCDSendCommand(4, 0xB1, 0x02, 0x25, 0x36); //SETPWCTR
+
+	LCDSendCommand(4, 0xB2, 0x02, 0x35, 0x36); //SETDISPLAY	
+
+	LCDSendCommand(7, 0xB3, 0x02, 0x35, 0x36, 0x02, 0x35, 0x36); //Doesn't exist
+
+	LCDSendCommand(2, 0xB4, 0x07); //SETCYC
+
+	LCDSendCommand(4, 0xC0, 0xA2, 0x02, 0x04); //SETSTBA
+
+	LCDSendCommand(2, 0xC1, 0xC5); //Doesn't exist
+
+	LCDSendCommand(3, 0xC2, 0x0D, 0x00); //Doesn't exist
+
+	LCDSendCommand(3, 0xC3, 0x8D, 0x1A); //SETID
+
+	LCDSendCommand(3, 0xC4, 0x8D, 0xEE); //Doesn't exist
+
+	LCDSendCommand(2, 0xC5, 0x09); //Doesn't exist
+
+	LCDSendCommand(17, 0xE0, 0x0A, 0x1C, 0x0C, 0x14, 0x33, 0x2B, 0x24, 0x28, 0x27, 0x25, 0x2C, 0x39, 0x00, 0x05, 0x03, 0x0D);
+
+	LCDSendCommand(17, 0xE1, 0x0A, 0x1C, 0x0C, 0x14, 0x33, 0x2B, 0x24, 0x28, 0x27, 0x25, 0x2C, 0x39, 0x00, 0x05, 0x03, 0x0D);
+
+	LCDSendCommand(2, 0x3A, 0x06); // set for 3-wire 18-bits per pixel
+
+	LCDSendCommand(1, 0x29);
+	usleep(150);
+
+}
+
+	
+void setOrientation(int orientation) {
+	switch(orientation) {
+		case 0:
+			LCDSendCommand(5, 0x2A, 0x00, 0x02, 0x00, 0x81);
+			LCDSendCommand(5, 0x2B, 0x00, 0x01, 0x00, 0x80);
+			LCDSendCommand(2, 0x36, 0x40);
+			break;
+		case 1:
+		       	LCDSendCommand(5, 0x2A, 0x00, 0x03, 0x00, 0x82);
+			LCDSendCommand(5, 0x2B, 0x00, 0x02, 0x00, 0x81);	
+			LCDSendCommand(2, 0x36, 0xE0);
+			break;
+		case 2:
+			LCDSendCommand(5, 0x2A, 0x00, 0x02, 0x00, 0x81);
+			LCDSendCommand(5, 0x2B, 0x00, 0x03, 0x00, 0x82);
+			LCDSendCommand(2, 0x36, 0x80);
+			break;
+		case 3: 
+			LCDSendCommand(5, 0x2A, 0x00, 0x01, 0x00, 0x80);
+			LCDSendCommand(5, 0x2B, 0x00, 0x02, 0x00, 0x81);
+			LCDSendCommand(2, 0x36, 0x20);
+			break;
+	}
+}
+
+void fillScreenRandom(){
+	int i = 0;
+	char inbyte;
+	Transfer tbuffer[491512];
+	FILE *random = fopen("/dev/urandom", "r");
+
+	LCDSendCommand(1, 0x2C);
+
+	for(i=0;i<49152;i++){
+		fread(&inbyte, 1, 1, random);
+		tbuffer[i].data = inbyte;
+		tbuffer[i].type = 1;	
+	}
+
+	void *buff_ptr = tbuffer;
+	for(i=0;i<128;i++){
+		SPIWriteChunk(buff_ptr, 768);
+		buff_ptr += 768;
+	}
+
+	fclose(random);
+}
+
+
+void displayimage(){
+
+char pixel[5], *data = header_data;
+int i = width * height;
+Transfer tbuffer[7];
+void *buff_ptr = tbuffer;
+
+    LCDSendCommand(1, 0x2C);
+
+    while(i-- > 0) {
+	HEADER_PIXEL(data,pixel);
+
+	tbuffer[0].data=( 0xff);
+	tbuffer[0].type=1;
+
+	tbuffer[1].data=(0xff);
+	tbuffer[1].type=1;
+
+	tbuffer[2].data=(0xff);
+	tbuffer[2].type=1;
+
+	SPIWriteChunk(buff_ptr, 6);
+
+    }
+
+}
+
+void fillScreenBars(){
+    int i = 0;
+    Transfer tbuffer[49152];
+
+    LCDSendCommand(1, 0x2C);
+
+    for(i=0;i<49152;i++){
+        if(((i%3) == 0 && (i%384)>=256) ||
+           ((i%3) == 1 && (i%384)>=128 && (i%384)<256) || 
+           ((i%3) == 2 && (i%384)<128)){
+            tbuffer[i].data = 0xFF;
+            tbuffer[i].type = 1;
+        }else{
+            tbuffer[i].data = 0x00;
+            tbuffer[i].type = 1;
+        }
+    }
+
+    void *buff_ptr = tbuffer;
+    for(i=0;i<128;i++){
+        SPIWriteChunk(buff_ptr, 768);
+        buff_ptr += 768;
+    }
+}
+
+void imprime(char Caracter){
+  Transfer tbuffer[7];
+  void *buff_ptr = tbuffer;
+  int  k = 0, bitread = 0;
+  
+     for(k =0; k <8; k++){
+                  
+        bitread = BitRead(Caracter, k);
+        
+        if(bitread == 1 ){
+          tbuffer[0].data=(0x00);
+          tbuffer[0].type=1;
+
+          tbuffer[1].data=(0xff);
+          tbuffer[1].type=1;
+ 
+          tbuffer[2].data=(0x00);
+          tbuffer[2].type=1;
+
+        }else{
+          tbuffer[0].data=(0x00);
+          tbuffer[0].type=1;
+
+          tbuffer[1].data=(0x00);
+          tbuffer[1].type=1;
+
+          tbuffer[2].data=(0x00);
+          tbuffer[2].type=1;
+        }
+        
+        SPIWriteChunk(buff_ptr, 6);
+    }
+}
+
+
+void display(){
+  Transfer tbuffer[7];
+  void *buff_ptr = tbuffer;
+  int i =0, j =0, k =0, bitread = 0, cont, x, y;
+  LCDSendCommand(1, 0x2C);
+
+
+  for (j = 0; j < 128; j++){
+    for( i = 0; i < 128; i++ ){
+
+      if(j == 51 && i == 66 ){  
+          imprime(fd_08x08[217]);   
+          imprime(fd_08x08[322]);
+          imprime(fd_08x08[315]); 
+          i = i + 23;
+          x = x + 1;
+          printf("x %d \n",x);
+          printf("y %d \n",y);
+          printf("SAIU");
+      }else
+      if(j == 52 && i == 66){ 
+          imprime(fd_08x08[218]);
+          imprime(fd_08x08[323]);
+          imprime(fd_08x08[316]);   
+          i = i + 23;
+          x = x + 1;
+          printf("x %d \n",x);
+          printf("y %d \n",y);
+      }else
+      if(j == 53 && i == 66){ 
+          imprime(fd_08x08[219]);   
+          imprime(fd_08x08[324]);
+          imprime(fd_08x08[317]);   
+          i = i + 23;
+          x = x + 1;
+          printf("x %d \n",x);
+          printf("y %d \n",y);
+     }else
+      if(j == 54 && i == 66){ 
+          imprime(fd_08x08[220]);
+          imprime(fd_08x08[325]);
+          imprime(fd_08x08[318]);   
+          i = i + 23;
+          x = x + 1;
+          printf("x %d \n",x);
+          printf("y %d \n",y);
+      }else
+      if(j == 55 && i == 66){ 
+          imprime(fd_08x08[221]);   
+          imprime(fd_08x08[326]);
+          imprime(fd_08x08[319]);   
+          i = i + 23;
+          x = x + 1;
+          printf("x %d \n",x);
+          printf("y %d \n",y);
+    }else
+    if(j == 56 && i == 66){ 
+          imprime(fd_08x08[222]);   
+          imprime(fd_08x08[327]); 
+          imprime(fd_08x08[320]);   
+          i = i + 23;
+          x = x + 1;
+          printf("x %d \n",x);
+          printf("y %d \n",y);
+    }else
+    if(j == 57 && i == 66){ 
+          imprime(fd_08x08[223]); 
+          imprime(fd_08x08[328]); 
+          imprime(fd_08x08[321]);   
+          i = i + 23;
+          printf("x %d \n",x);
+          printf("y %d \n",y);
+    } 
+
+    }
+  }
+}
+
+
+void VerificaTelaEsquerda(){
+  int i, j;
+
+  for(i = 0; i < 128; i ++){
+    for(j = 0; j < 128; j ++){
+      if( (i%2) == 0){
+        tbufferDisplay[i][j] = '1'; 
+      }else{
+        tbufferDisplay[i][j] = '0';  
+      }
+    }
+  }
+} 
+
+void VerificaTelaDireita(){
+  int i, j;
+
+  for(i = 0; i < 128; i ++){
+    for(j = 0; j < 128; j ++){
+      if( (j%2) == 0){
+        tbufferDisplay[i][j] = '1'; 
+      }else{
+        tbufferDisplay[i][j] = '0';  
+      }
+    }
+  }
+} 
+
+
+void LimpaDisplay(){
+  int i, j;
+
+  for(i = 0; i < 128; i ++){
+    for(j = 0; j < 128; j ++){
+        tbufferDisplay[i][j] = '0'; 
+    }
+  }
+} 
+
+int RertornaPosicaoCaracter(char cCaracter){
+  int i, GuardaPosicao = -1;
+
+  for( i = 0; i < 150; i++){
+    if(cCaracter == FontesDisplay[i].cCaracter){
+      GuardaPosicao = i;
+      break;
+    }
+  }
+
+  return GuardaPosicao;
+}
+
+char RetornaLinhaCaracter( int nPosicao, int nLinha){
+    return FontesDisplay[nPosicao].mcLinha[nLinha];
+}
+
+void EscreveCaracterMemoria(int x, int y, char cCaracter){
+int PosicaoInicialY, finalx, finaly, PosicaoBuffer, contadorX, contadorY;
+char cCaracterPintar;
+
+  contadorX = 0;
+  contadorY = 0;
+  PosicaoInicialY = y;
+  finalx = x + 7;
+  finaly = y + 7;
+  /////////////////////////
+
+  PosicaoBuffer =  RertornaPosicaoCaracter(cCaracter); 
+  
+  for( x; x < finalx; x++){
+   // printf("\n x: %d \n", x); 
+     cCaracterPintar = RetornaLinhaCaracter( PosicaoBuffer, contadorX);
+     contadorX++;
+     contadorY = 0;    
+
+    for(y = PosicaoInicialY; y < finaly; y++){
+        if(BitRead(cCaracterPintar, contadorY)){
+             tbufferDisplay[x][y] = '1';
+        }else{
+             tbufferDisplay[x][y] = '0';
+        }
+        contadorY++;  
+    }
+  }
+
+}
+
+
+void EscreveSPI(){
+  Transfer tbuffer[7];
+  void *buff_ptr = tbuffer;
+  int i, j;
+
+  LCDSendCommand(1, 0x2C);
+
+  for(i = 0; i < 128; i ++){
+    for(j = 0; j < 128; j ++){
+      
+        if(tbufferDisplay[i][j]  == '1' ){
+            tbuffer[0].data=(0xff);
+            tbuffer[0].type=1;
+
+            tbuffer[1].data=(0xff);
+            tbuffer[1].type=1;
+
+            tbuffer[2].data=(0xff);
+            tbuffer[2].type=1;
+                
+            SPIWriteChunk(buff_ptr, 6);
+
+        }else{
+            tbuffer[0].data=(0x00);
+            tbuffer[0].type=1;
+
+            tbuffer[1].data=(0x00);
+            tbuffer[1].type=1;
+
+            tbuffer[2].data=(0x00);
+            tbuffer[2].type=1;
+
+            SPIWriteChunk(buff_ptr, 6);
+       }
+    }
+  }
+}
+
+void EscreveStringLinha(int x, int y, char cCaracter){
+      EscreveCaracterMemoria(x, y, cCaracter);
+}
+
+int verificaLinha(int x){
+
+  if (x == 1){
+    return 1;
+  }if (x == 2){
+    return 8;
+  }else
+  if (x == 3){
+    return 16;
+  }else
+  if (x == 4){
+    return 24;
+  }else
+  if (x == 5){
+    return 32;
+  }else
+  if (x == 6){
+    return 40;
+  }else
+  if (x == 7){
+    return 48;
+  }else
+  if (x == 8){
+    return 56;
+  }else
+  if (x == 9){
+    return 64;
+  }else
+  if (x == 10){
+    return 72;
+  }
+}
+
+
+
+void EscreveString (char * sString){
+  int i, contador = 0, contX, contY; 
+
+  contador = strlen(sString);
+  contY = 120;
+  contX = 2;
+
+  for( i = 0; i <= strlen(sString); i ++){
+    //printf("Entro %d \n", i);
+
+    if(contY == 120 && sString[i] == ' '){
+      printf("Nao escreve Linha - primeira Letra\n");
+      i++;
+    }
+    
+    EscreveStringLinha(contX , contY, sString[i]);
+      
+
+      if(sString[i] == ' '){
+        contY = contY - 4;  
+      } else{
+          contY = contY - 8;
+      }
+      
+      if(contY <= 0){
+        contY = 120;
+        contX = contX + 12;
+      }
+      
+
+
+      
+
+
+  //else{
+     // EscreveStringLinha(verificaLinha(i) , i, " ");
+   // }
+  }
+}
+
+
+int main(int argc, char *argv[ ]){
+  int cont, contador;
+  char greeting[200];
+
+	init_tft(0);
+	setOrientation(0);
+  //fillScreenBars();
+  //displayimage();
+  
+
+  //VerificaTelaEsquerda();
+  //EscreveSPI();
+  //sleep(2);
+  
+  //VerificaTelaDireita();
+  //EscreveSPI();
+  //sleep(2);
+
+  LimpaDisplay();
+  EscreveSPI();
+  sleep(2);
+
+  //EscreveCaracterMemoria(2, 120, 'R');
+  //EscreveCaracterMemoria(2, 112, 'a');
+ // EscreveCaracterMemoria(2, 104, 'f');
+  //EscreveCaracterMemoria(2, 96,  'a');
+ // EscreveCaracterMemoria(2, 88,  'e');
+ // EscreveCaracterMemoria(2, 80,  'l');
+  //EscreveSPI();
+ // sleep(2);
+  
+  strcpy (greeting, "");
+  contador = 0;
+  
+  for(cont=0; cont < argc; cont++){
+    printf("%d Parametro: %s\n", cont,argv[cont]);
+    if(cont != 0){
+        strcat (greeting, argv[cont]);
+        strcat (greeting, " ");
+    } 
+  }
+  
+  printf("Parametro greeting: %s \n \n ", greeting);
+  EscreveString(greeting);  
+  EscreveSPI();
+  printf("Sucesso \n ");
+	return 0;
+}

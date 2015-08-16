@@ -1,0 +1,44 @@
+<div class="jumbotron">
+  <h1 class="text-center">
+    Bem-vindo ao Ambiente de Vida Assistida
+  </h1>
+</div>
+
+<p ng-show="mensagem.texto">
+    {{mensagem.texto}}
+</p>
+
+<p ng-show="devices.length">
+  Dispositivos cadastrados: {{devices.length}}
+</p>
+<p class="text-info" ng-hide="devices.length">
+    Não há dispositivos cadastrados
+</p>
+
+<input type="search" placeholder="parte do dispositivo" ng-model="filtro">
+
+<div class="table-responsive">
+  <table class="table table-hover">
+    <tr>
+      <th>Device</th>
+      <th>Temperatura</th>
+      <th>valor2</th>
+      <th>data</th>
+    </tr>
+  	<tr ng-repeat="device in devices | filter: filtro">
+  		<td>
+        <a ng-href="#/device/{{device._id}}">{{device.device}}</a>
+      </td>
+  	  <td>{{device.valor1}}</td>
+      <td>{{device.valor2}}</td>
+      <td>{{device.data}}</td>
+  		<td class="text-center">
+  			<button  
+          ng-click="remove(device" 
+          class="btn btn-warning">
+  				  Remover
+  			</buttom> 
+  		</td>
+  	</tr>
+  </table>
+</div>
