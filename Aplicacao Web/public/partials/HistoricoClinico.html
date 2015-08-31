@@ -1,10 +1,53 @@
-<div class="jumbotron">
-  <h1 class="text-center">
-    Bem-vindo dados clinicos
-  </h1>
+<head> <title> Historico</title> 
+  <meta charset="utf-8" /> <!-- <link href="ContatoEstilo.css" rel="stylesheet" media="all" /> <script src="JavaScript1.js"></script>-->
+</head> 
+
+
+<div class="container">
+  <div class="jumbotron" class="text-center">
+    <h5>UNIVERSIDADE DO VALE DO ITAJAÍ</h5>      
+    <h5>CENTRO DE CIÊNCIAS TECNOLÓGICAS DA TERRA E DO MAR</h5>
+    <h5>CURSO DE ENGENHARIA DE COMPUTAÇÃO</h5>
+    <h2> Bem vindo ao Ambiente de Vida Assistida</h2>
+  </div>
 </div>
 
+<p ng-show="mensagem.texto">
+    {{mensagem.texto}}
+</p>
 
-<head> <title> DadosClinicos </title> 
- <!-- 	<meta charset="utf-8" /> <!-- <link href="ContatoEstilo.css" rel="stylesheet" media="all" /> <script src="JavaScript1.js"></script>-->
-</head> 
+<p ng-show="devices.length">
+  Dispositivos cadastrados: {{devices.length}}
+</p>
+<p class="text-info" ng-hide="devices.length">
+    Não há dispositivos cadastrados
+</p>
+
+<input type="search" placeholder="parte do dispositivo" ng-model="filtro">
+
+<div class="table-responsive">
+  
+<style>
+  table tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
+  table tr:nth-child(even) {
+    background-color: #f1f1f1;
+  }
+</style>
+
+  <table class="table table-hover">
+    <tr>
+      <th>Device</th>
+      <th>Valor</th>
+      <th>Unidade</th>
+      <th>Data</th>
+    </tr>
+  	<tr ng-repeat="device in devices | filter: filtro">
+      <td>{{device.device}}</td>
+      <td>{{device.valor}}</td>
+      <td>{{device.unidade}}</td>
+      <td>{{device.time}}</td>
+  	</tr>
+  </table>
+</div>

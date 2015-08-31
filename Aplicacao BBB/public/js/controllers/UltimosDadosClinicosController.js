@@ -12,14 +12,15 @@ $interval(callAtInterval, 3000);
 
 function callAtInterval() {
     refresh();
-    console.log("refresh");
+    //console.log("refresh");
 }
 
     
 var refresh = function() {
   $http.get('/arduino').then(function(response) {
-        $scope.temperatura = {texto: response.data.temperatura + '° C'};
-        $scope.cont        = {texto: response.data.cont};
+        console.log(response.data);
+        $scope.devices = response.data;
+       // $scope.unidade        = {texto: response.data.unidade};
         console.log("atualizou pagina");
            
           // this callback will be called asynchronously
@@ -27,7 +28,7 @@ var refresh = function() {
         }, function(response) {
             // called asynchronously if an error occurs
           // or server returns response with an error status.
-          $scope.temperatura = {texto: 'Ocorreu um erro!!'};
+          //$scope.temperatura = {texto: 'Ocorreu um erro!!'};
       });
 };
 
@@ -35,15 +36,14 @@ var refresh = function() {
   // Simple POST request example (passing data) :
   $http.get('/arduino').
       then(function(response) {
-        $scope.temperatura = {texto: response.data.temperatura + '° C'};
-        $scope.cont        = {texto: response.data.cont};
+        $scope.devices = response.data;
            
           // this callback will be called asynchronously
           // when the response is available
         }, function(response) {
             // called asynchronously if an error occurs
           // or server returns response with an error status.
-          $scope.temperatura = {texto: 'Ocorreu um erro!!'};
+    //      $scope.temperatura = {texto: 'Ocorreu um erro!!'};
       });
 
 });

@@ -1,2 +1,5 @@
-angular.module('contatooh').factory('UltimosDadosClinicos', function($q, $location) {  
+angular.module('contatooh').factory('DeviceInformationAtual', function($resource) {  
+
+		return $resource('/product/DeviceDriverUpdated/');	
 });
+

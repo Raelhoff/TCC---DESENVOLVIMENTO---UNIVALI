@@ -1,7 +1,10 @@
 
 // Variavel Global Device Arduino 
-var jsonStringDeviceArduino;
-module.exports.jsonStringDeviceArduino;
+var jsonStringDevicePulseSensor;
+var jsonStringDeviceSensorLM35;
+
+module.exports.jsonStringDevicePulseSensor;
+module.exports.jsonStringDeviceSensorLM35;
 
  
 

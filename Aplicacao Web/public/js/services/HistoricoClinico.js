@@ -1,2 +1,4 @@
-angular.module('contatooh').factory('HistoricoClinico', function($q, $location) {  
+angular.module('contatooh').factory('DeviceInformation', function($resource) {
+	
+	return $resource('/product/DeviceDriver/');
 });

@@ -1,8 +1,61 @@
+
+  
+
 module.exports = function (app) {
 
   var Device = app.models.DeviceInformation;
+  var controller = {};
+  var FindDevice = [];
+  var posicaoFind;
+   
+  controller.FindlistDevices = function(req, res) {
+    var i, j , posicao;
 
-  var controller = {}
+    posicaoFind = -1;
+
+    //Device.find().sort(req.data);
+    console.log("GET Device FIND");
+    Device.find().exec()
+    .then(
+      function(devices) {
+     //    console.log(devices);
+     //    console.log("GET Device");
+         console.log(devices.length); 
+         console.log(FindDevice.length);
+       
+         for(i = 0; i < devices.length; i ++){
+       
+            posicaoFind = -1;
+       
+            for(j = 0; j < FindDevice.length; j ++){
+                if(FindDevice[j].device == devices[i].device){
+                  posicaoFind = j;
+                  break;
+                }
+            }
+     
+        if(posicaoFind == -1){
+              console.log("Nao encontrado");
+        //      console.log(devices[i]);
+              FindDevice.push(devices[i]);   
+              console.log(FindDevice);  
+        }else
+        if(devices[i].time > FindDevice[posicaoFind].time  && posicaoFind != -1){
+            FindDevice[posicaoFind].time  = devices[i].time;
+            FindDevice[posicaoFind].valor = devices[i].valor;  
+        }
+            
+         }
+         console.log("RAFA WILMAR");
+         console.log(FindDevice);
+         res.json(FindDevice); 
+       },
+       function(erro) {
+         console.error(erro)
+         res.status(500).json(erro);
+       } 
+    );    
+  };
 
   controller.listDevices = function(req, res) {
     
@@ -18,6 +71,7 @@ module.exports = function (app) {
        } 
     );    
   };
+  
   
   controller.getdevice = function(req, res) {
 

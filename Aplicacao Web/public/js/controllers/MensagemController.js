@@ -16,7 +16,8 @@ $scope.Enviar = function(contato) {
 	// Simple POST request example (passing data) :
 	$http.post('/msg', contato).
   		then(function(response) {
-  			$scope.mensagem = {texto: 'Enviado com sucesso!!'};
+  			console.log(response);
+        $scope.mensagem = {texto: 'Enviado com sucesso!!'};
     			// this callback will be called asynchronously
     			// when the response is available
       			refresh();

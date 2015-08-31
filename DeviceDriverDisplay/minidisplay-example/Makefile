@@ -1,18 +1,17 @@
-# Generic Makefile for compiling a simple executable.
-
 CC := c++ 
 SRCDIR := src
 BUILDDIR := build
-CFLAGS := -g -Wall -lm
+CFLAGS := -g -Wall -lm 
 TARGET := minidisplay-test
 
+
 SRCEXT := c
-SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+SOURCES := $(shell find $(SRCDIR) $(LIBS) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 DEPS := $(OBJECTS:.o=.deps)
 
 $(TARGET): $(OBJECTS)
-	@echo " Linking..."; $(CC) $^ -o $(TARGET)
+	@echo " Linking..."; $(CC) $^ -o $(TARGET) $(LIBS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)

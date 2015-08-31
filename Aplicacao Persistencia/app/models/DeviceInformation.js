@@ -6,15 +6,15 @@ module.exports = function() {
       type: String, 
       required: true
     }, 
-    valor1: {
+    valor: {
       type: Number, 
       required: true 
     }, 
-    valor2: {
-      type: Number, 
+    unidade: {
+      type: String, 
       required: true 
     },
-    data: { 
+    time: { 
       type: String, 
       required: true
     }

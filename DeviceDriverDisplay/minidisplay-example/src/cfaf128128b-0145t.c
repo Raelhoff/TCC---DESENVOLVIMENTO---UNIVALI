@@ -11,6 +11,18 @@
 #include "boris-image.h"
 #include "Fontes.h"
 #include <string.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+ 
+#define BUFLEN 512  //Max length of buffer
+
+ 
+void die(char *s)
+{
+    perror(s);
+    exit(1);
+}
+
 
 #define pabort(s) {perror(s); abort();}
 
@@ -272,120 +284,6 @@ void fillScreenBars(){
     }
 }
 
-void imprime(char Caracter){
-  Transfer tbuffer[7];
-  void *buff_ptr = tbuffer;
-  int  k = 0, bitread = 0;
-  
-     for(k =0; k <8; k++){
-                  
-        bitread = BitRead(Caracter, k);
-        
-        if(bitread == 1 ){
-          tbuffer[0].data=(0x00);
-          tbuffer[0].type=1;
-
-          tbuffer[1].data=(0xff);
-          tbuffer[1].type=1;
- 
-          tbuffer[2].data=(0x00);
-          tbuffer[2].type=1;
-
-        }else{
-          tbuffer[0].data=(0x00);
-          tbuffer[0].type=1;
-
-          tbuffer[1].data=(0x00);
-          tbuffer[1].type=1;
-
-          tbuffer[2].data=(0x00);
-          tbuffer[2].type=1;
-        }
-        
-        SPIWriteChunk(buff_ptr, 6);
-    }
-}
-
-
-void display(){
-  Transfer tbuffer[7];
-  void *buff_ptr = tbuffer;
-  int i =0, j =0, k =0, bitread = 0, cont, x, y;
-  LCDSendCommand(1, 0x2C);
-
-
-  for (j = 0; j < 128; j++){
-    for( i = 0; i < 128; i++ ){
-
-      if(j == 51 && i == 66 ){  
-          imprime(fd_08x08[217]);   
-          imprime(fd_08x08[322]);
-          imprime(fd_08x08[315]); 
-          i = i + 23;
-          x = x + 1;
-          printf("x %d \n",x);
-          printf("y %d \n",y);
-          printf("SAIU");
-      }else
-      if(j == 52 && i == 66){ 
-          imprime(fd_08x08[218]);
-          imprime(fd_08x08[323]);
-          imprime(fd_08x08[316]);   
-          i = i + 23;
-          x = x + 1;
-          printf("x %d \n",x);
-          printf("y %d \n",y);
-      }else
-      if(j == 53 && i == 66){ 
-          imprime(fd_08x08[219]);   
-          imprime(fd_08x08[324]);
-          imprime(fd_08x08[317]);   
-          i = i + 23;
-          x = x + 1;
-          printf("x %d \n",x);
-          printf("y %d \n",y);
-     }else
-      if(j == 54 && i == 66){ 
-          imprime(fd_08x08[220]);
-          imprime(fd_08x08[325]);
-          imprime(fd_08x08[318]);   
-          i = i + 23;
-          x = x + 1;
-          printf("x %d \n",x);
-          printf("y %d \n",y);
-      }else
-      if(j == 55 && i == 66){ 
-          imprime(fd_08x08[221]);   
-          imprime(fd_08x08[326]);
-          imprime(fd_08x08[319]);   
-          i = i + 23;
-          x = x + 1;
-          printf("x %d \n",x);
-          printf("y %d \n",y);
-    }else
-    if(j == 56 && i == 66){ 
-          imprime(fd_08x08[222]);   
-          imprime(fd_08x08[327]); 
-          imprime(fd_08x08[320]);   
-          i = i + 23;
-          x = x + 1;
-          printf("x %d \n",x);
-          printf("y %d \n",y);
-    }else
-    if(j == 57 && i == 66){ 
-          imprime(fd_08x08[223]); 
-          imprime(fd_08x08[328]); 
-          imprime(fd_08x08[321]);   
-          i = i + 23;
-          printf("x %d \n",x);
-          printf("y %d \n",y);
-    } 
-
-    }
-  }
-}
-
-
 void VerificaTelaEsquerda(){
   int i, j;
 
@@ -516,41 +414,6 @@ void EscreveStringLinha(int x, int y, char cCaracter){
       EscreveCaracterMemoria(x, y, cCaracter);
 }
 
-int verificaLinha(int x){
-
-  if (x == 1){
-    return 1;
-  }if (x == 2){
-    return 8;
-  }else
-  if (x == 3){
-    return 16;
-  }else
-  if (x == 4){
-    return 24;
-  }else
-  if (x == 5){
-    return 32;
-  }else
-  if (x == 6){
-    return 40;
-  }else
-  if (x == 7){
-    return 48;
-  }else
-  if (x == 8){
-    return 56;
-  }else
-  if (x == 9){
-    return 64;
-  }else
-  if (x == 10){
-    return 72;
-  }
-}
-
-
-
 void EscreveString (char * sString){
   int i, contador = 0, contX, contY; 
 
@@ -579,64 +442,94 @@ void EscreveString (char * sString){
         contY = 120;
         contX = contX + 12;
       }
-      
-
-
-      
-
-
-  //else{
-     // EscreveStringLinha(verificaLinha(i) , i, " ");
-   // }
   }
 }
 
 
-int main(int argc, char *argv[ ]){
+int main(int Tipo, char *argv[ ]){
   int cont, contador;
   char greeting[200];
+   struct sockaddr_in si_me, si_other;
+   int s, i, slen = sizeof(si_other) , recv_len;
+   char buf[BUFLEN];
+    
 
 	init_tft(0);
 	setOrientation(0);
-  //fillScreenBars();
-  //displayimage();
-  
+  LCDSendCommand(1, 0x2C);
 
-  //VerificaTelaEsquerda();
-  //EscreveSPI();
-  //sleep(2);
+  displayimage();
   
-  //VerificaTelaDireita();
-  //EscreveSPI();
-  //sleep(2);
+  // Inicializa
+  if(Tipo == 1){
+    printf("SEND_EXIT\n");
+    return 0;
+  }else
 
-  LimpaDisplay();
-  EscreveSPI();
-  sleep(2);
-
-  //EscreveCaracterMemoria(2, 120, 'R');
-  //EscreveCaracterMemoria(2, 112, 'a');
- // EscreveCaracterMemoria(2, 104, 'f');
-  //EscreveCaracterMemoria(2, 96,  'a');
- // EscreveCaracterMemoria(2, 88,  'e');
- // EscreveCaracterMemoria(2, 80,  'l');
-  //EscreveSPI();
- // sleep(2);
+  if(Tipo == 2){ // UDP
+       //create a UDP socket
+    if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+    {
+        die("socket");
+    }
+     
+    // zero out the structure
+    memset((char *) &si_me, 0, sizeof(si_me));
+     
+    si_me.sin_family = AF_INET;
+    si_me.sin_port = htons(atoi(argv[1]));
+    si_me.sin_addr.s_addr = htonl(INADDR_ANY);
+     
+    //bind socket to port
+    if( bind(s , (struct sockaddr*)&si_me, sizeof(si_me) ) == -1)
+    {
+        die("bind");
+    }
+    
+    printf("Porta: %d\n", atoi(argv[1]));
+    printf("Esperando Buffer...\n");
+       while(1)
+    {
+      bzero(buf, BUFLEN);
+        fflush(stdout);
+         
+        //try to receive some data, this is a blocking call
+        if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, (socklen_t*)&slen)) == -1)
+        {
+            die("recvfrom()");
+        }
+                
+        //print details of the client/peer and the data received
+        printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
+        printf("Data: %s\n" , buf);
+        LimpaDisplay();
+        EscreveSPI(); 
+        EscreveString(buf);  
+        EscreveSPI(); 
+        //now reply the client with the same data
+        if (sendto(s, buf, recv_len, 0, (struct sockaddr*) &si_other, slen) == -1)
+        {
+            die("sendto()");
+        }
+    }
+ 
+    close(s);
+    return 0;
+  }else
+  {
+    strcpy (greeting, "");
+    contador = 0;
   
-  strcpy (greeting, "");
-  contador = 0;
-  
-  for(cont=0; cont < argc; cont++){
-    printf("%d Parametro: %s\n", cont,argv[cont]);
-    if(cont != 0){
+    for(cont = 2; cont < Tipo; cont++){
+        printf("%d Parametro: %s\n", cont,argv[cont]);
         strcat (greeting, argv[cont]);
         strcat (greeting, " ");
-    } 
-  }
+    }
   
-  printf("Parametro greeting: %s \n \n ", greeting);
-  EscreveString(greeting);  
-  EscreveSPI();
-  printf("Sucesso \n ");
-	return 0;
+    printf("Parametro greeting: %s \n \n ", greeting);
+    EscreveString(greeting);  
+    EscreveSPI();
+    printf("Sucesso \n ");
+	  return 0;
+  }
 }
