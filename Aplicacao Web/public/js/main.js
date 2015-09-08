@@ -1,11 +1,7 @@
 angular.module('contatooh',['ngRoute', 'ngResource'])
   .config(function($routeProvider) {
 
-    $routeProvider.when('/home', {
-      templateUrl: 'partials/Home.html',
-      controller: 'HomeController'
-    });
-    
+  
     $routeProvider.when('/mensagem', {
       templateUrl: 'partials/Mensagem.html',
       controller: 'MensagemController'
@@ -21,5 +17,11 @@ angular.module('contatooh',['ngRoute', 'ngResource'])
       controller: 'HistoricoClinicoController'
     });
 
-    $routeProvider.otherwise({redirectTo: '#/home'});
+    $routeProvider.when('/LoginController', {
+      templateUrl: 'partials/LoginController.html',
+      controller: 'LoginController'
+    });
+    
+
+    $routeProvider.otherwise({redirectTo:'/LoginController'});
 });

@@ -2,24 +2,51 @@
  <!-- 	<meta charset="utf-8" /> <!-- <link href="ContatoEstilo.css" rel="stylesheet" media="all" /> <script src="JavaScript1.js"></script>-->
 </head> 
 
-<p ng-show="devices.length">
+      <!-- HEADER -->
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div>
+      <ul class="nav navbar-nav">      
+        <li><a href="#/ultimosdados">Últimos Dados Clínicos</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#/LoginController"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+<p ng-show="devices.length"  >
   Dispositivos cadastrados: {{devices.length}}
 </p>
-<p class="text-info" ng-hide="devices.length">
-    Não há dispositivos cadastrados
+<p ng-hide="devices.length" >
+    Não há registro 
 </p>
 
-<input type="search" placeholder="parte do dispositivo" ng-model="filtro">
+<input type="search" placeholder="Nome do dispositivo" ng-model="filtro">
 
 <div class="table-responsive">
   
 <style>
+p {
+    font-size: 40px;
+    color: orange;
+}
+
+body{
+    background: url(http://mymaplist.com/img/parallax/back.png);
+    background-color: #444;
+    background: url(http://mymaplist.com/img/parallax/pinlayer2.png),url(http://mymaplist.com/img/parallax/pinlayer1.png),url(http://mymaplist.com/img/parallax/back.png);    
+}
+
   table tr:nth-child(odd) {
     background-color: #ffffff;
   }
   table tr:nth-child(even) {
     background-color: #f1f1f1;
   }
+
 </style>
 
   <table class="table table-hover">

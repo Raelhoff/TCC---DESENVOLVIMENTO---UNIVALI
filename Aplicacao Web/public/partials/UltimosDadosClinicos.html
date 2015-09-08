@@ -3,14 +3,23 @@
  <!--   <meta charset="utf-8" /> <!-- <link href="ContatoEstilo.css" rel="stylesheet" media="all" /> <script src="JavaScript1.js"></script>-->
 </head> 
 
-<div class="container">
-  <div class="jumbotron" class="text-center">
-    <h5>UNIVERSIDADE DO VALE DO ITAJAÍ</h5>      
-    <h5>CENTRO DE CIÊNCIAS TECNOLÓGICAS DA TERRA E DO MAR</h5>
-    <h5>CURSO DE ENGENHARIA DE COMPUTAÇÃO</h5>
-    <h2> Bem vindo ao Ambiente de Vida Assistida</h2>
+      <!-- HEADER -->
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+  </body>
+    </div>
+    <div>
+      <ul class="nav navbar-nav">      
+        <li><a href="#/ultimosdados"><span class="glyphicon glyphicon-repeat"></span> Ultimos Dados Clinicos</a></li>
+        <li><a href="#/historico"><span class="glyphicon glyphicon-th-list"></span> Historico Clinico</a></li>
+        <li><a href="#/mensagem"><span class="glyphicon glyphicon-envelope"></span> Mensagem</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#/LoginController"><span class="glyphicon glyphicon-log-in"></span> Login  </a></li>
+      </ul>
+    </div>
   </div>
-  
+</nav>
 
 <p ng-show="mensagem.texto">
     {{mensagem.texto}}
@@ -23,7 +32,7 @@
     Não há dispositivos cadastrados
 </p>
 
-<input type="search" placeholder="parte do dispositivo" ng-model="filtro">
+<input type="search" placeholder="Digite nome do dispositivo" ng-model="filtro">
 
 <div class="table-responsive">
   <style>
@@ -50,3 +59,4 @@
   	</tr>
   </table>
 </div>
+

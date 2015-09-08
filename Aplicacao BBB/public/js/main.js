@@ -5,6 +5,12 @@ angular.module('contatooh',['ngRoute', 'ngResource'])
       templateUrl: 'partials/UltimosDadosClinicos.html',
       controller: 'UltimosDadosClinicosController'
     });
-        
-    $routeProvider.otherwise({redirectTo:'/ultimosdados'});
+
+    $routeProvider.when('/LoginController', {
+      templateUrl: 'partials/LoginController.html',
+      controller: 'LoginController'
+    });
+    
+
+    $routeProvider.otherwise({redirectTo:'/LoginController'});
 });

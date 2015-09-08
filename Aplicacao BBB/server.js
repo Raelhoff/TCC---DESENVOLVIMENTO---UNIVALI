@@ -58,7 +58,7 @@ setInterval(function(){
    //           res.send("rafa");
           })
           .on('error', function(err) {
-              console.error(err);
+//              console.error(err);
      //         res.status(500).json(err);
           })      
         // Envia Temperatura
@@ -70,7 +70,7 @@ setInterval(function(){
    //           res.send("rafa");
           })
           .on('error', function(err) {
-              console.error(err);
+  //            console.error(err);
      //         res.status(500).json(err);
           }) 
 
