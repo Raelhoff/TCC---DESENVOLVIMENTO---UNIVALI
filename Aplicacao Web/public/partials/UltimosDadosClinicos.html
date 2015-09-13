@@ -1,0 +1,62 @@
+
+<head> <title> UltimosDados </title> 
+ <!--   <meta charset="utf-8" /> <!-- <link href="ContatoEstilo.css" rel="stylesheet" media="all" /> <script src="JavaScript1.js"></script>-->
+</head> 
+
+      <!-- HEADER -->
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+  </body>
+    </div>
+    <div>
+      <ul class="nav navbar-nav">      
+        <li><a href="#/ultimosdados"><span class="glyphicon glyphicon-repeat"></span> Ultimos Dados Clinicos</a></li>
+        <li><a href="#/historico"><span class="glyphicon glyphicon-th-list"></span> Historico Clinico</a></li>
+        <li><a href="#/mensagem"><span class="glyphicon glyphicon-envelope"></span> Mensagem</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#/LoginController"><span class="glyphicon glyphicon-log-in"></span> Login  </a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<p ng-show="mensagem.texto">
+    {{mensagem.texto}}
+</p>
+
+<p ng-show="devices.length">
+  Dispositivos cadastrados: {{devices.length}}
+</p>
+<p class="text-info" ng-hide="devices.length">
+    Não há dispositivos cadastrados
+</p>
+
+<input type="search" placeholder="Digite nome do dispositivo" ng-model="filtro">
+
+<div class="table-responsive">
+  <style>
+    table tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+    table tr:nth-child(even) {
+      background-color: #f1f1f1; 
+    }
+  </style>
+
+  <table class="table table-hover">
+    <tr>
+      <th>Device</th>
+      <th>Valor</th>
+      <th>Unidade</th>
+      <th>Data</th>
+    </tr>
+  	<tr ng-repeat="device in devices | filter: filtro">
+  		<td>{{device.device}}</td>
+  	  <td>{{device.valor}}</td>
+      <td>{{device.unidade}}</td>
+      <td>{{device.time}}</td>
+  	</tr>
+  </table>
+</div>
+
