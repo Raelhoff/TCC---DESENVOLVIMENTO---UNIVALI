@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="sessenta_dp">60dp</dimen>
+    <dimen name="dez_dp">10dp</dimen>
+    
+</resources>
