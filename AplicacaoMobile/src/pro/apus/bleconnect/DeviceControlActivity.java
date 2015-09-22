@@ -491,7 +491,7 @@ public class DeviceControlActivity extends Activity {
 				
 				if (currentlyVisible) {
 					mDataField.setText("Pulso: " + data);
-					device.setDevice("AndroidSpovan");
+					device.setDevice("Spovan");
 					device.setValor(String.valueOf(data));
 					device.setUnidade("BPS");
 					rest.PostService(device);

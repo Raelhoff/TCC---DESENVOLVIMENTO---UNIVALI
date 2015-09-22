@@ -31,7 +31,7 @@ import android.app.Activity;
 public class REST {	
 
 	private static Device device = new Device();
-	public String URL    = "http://192.168.25.22:4433/";
+	public String URL    = "http://192.168.25.100:3333/arduino";
 	
 	public void PostService(Device kdevice){
 		device = kdevice;
@@ -53,10 +53,10 @@ public class REST {
 		    
 
 		    JSONObject jsonObject = new JSONObject();
-		    jsonObject.accumulate("Dispositivo", device.getDevice());
-		    jsonObject.accumulate("Valor", device.getValor());
-		    jsonObject.accumulate("Unidade",device.getUnidade());
-		    jsonObject.accumulate("Data",getCurrentTimeStamp());
+		    jsonObject.accumulate("device", device.getDevice());
+		    jsonObject.accumulate("valor", device.getValor());
+		    jsonObject.accumulate("unidade",device.getUnidade());
+		    jsonObject.accumulate("time",getCurrentTimeStamp());
 		    
 		    // 4. convert JSONObject to JSON to String
 		    json = jsonObject.toString();

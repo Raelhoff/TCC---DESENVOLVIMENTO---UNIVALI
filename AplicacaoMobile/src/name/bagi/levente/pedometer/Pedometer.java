@@ -408,7 +408,7 @@ public class Pedometer extends Activity {
                     mStepValueView.setText("" + mStepValue);
 		            
                     if( mStepValue != mStepValueaux && mStepValue != 0){ 
-                    	device.setDevice("AndroidPedometro");
+                    	device.setDevice("AndroidPedometroPassos");
                     	device.setValor(String.valueOf(mStepValue));
                     	device.setUnidade("passos");
                     	rest.PostService(device);
@@ -422,7 +422,7 @@ public class Pedometer extends Activity {
                     }
                     else {
                     	mPaceValueView.setText("" + (int)mPaceValue);
-                    	device.setDevice("AndroidPedometro");
+                    	device.setDevice("AndroidPedometroPassosMinutos");
                     	device.setValor(String.valueOf(mPaceValue));
                     	device.setUnidade("passos/minuto");
                     	rest.PostService(device);
@@ -437,17 +437,19 @@ public class Pedometer extends Activity {
                         mDistanceValueView.setText(
                                 ("" + (mDistanceValue + 0.000001f)).substring(0, 5)
                         );
+                        /*
                         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-mm-dd HH:MM:ss");//dd/MM/yyyy
             	        Date now = new Date();
             	        String strDate = sdfDate.format(now);
             	       
                         if(strDate  != strDateGlobal  && mDistanceValue != 0){
-                        	device.setDevice("AndroidPedometro");
+                        	device.setDevice("AndroidPedometrokm");
                         	device.setValor(("" + (mDistanceValue + 0.000001f)).substring(0, 5));
-                        	device.setUnidade("milhas");
+                        	device.setUnidade("km");
                         	rest.PostService(device);
                         	strDateGlobal = strDate;
                         }
+                        */
                     }
                     break;
                 case SPEED_MSG:
@@ -459,18 +461,20 @@ public class Pedometer extends Activity {
                         mSpeedValueView.setText(
                                 ("" + (mSpeedValue + 0.000001f)).substring(0, 4)
                         );
-                        
+               
+                        /*
                         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-mm-dd HH:MM:ss");//dd/MM/yyyy
             	        Date now = new Date();
             	        String strDate = sdfDate.format(now);
             	       
                         if(strDate  != strDateGlobal  &&  mSpeedValue != 0){
-                           device.setDevice("AndroidPedometro");
+                           device.setDevice("AndroidPedometrokmhora");
                         	device.setValor(("" + (mSpeedValue + 0.000001f)).substring(0, 4));
                         	device.setUnidade("km/hora");
                         	rest.PostService(device);
                         	strDateGlobal = strDate;
                         }
+                        */
                     }
                     break;
                 case CALORIES_MSG:
@@ -481,7 +485,7 @@ public class Pedometer extends Activity {
                     else {
                         mCaloriesValueView.setText("" + (int)mCaloriesValue);
                         if(mCaloriesValue != mCaloriesValueaux  && mCaloriesValue != 0){
-                        	device.setDevice("AndroidPedometro");
+                        	device.setDevice("AndroidPedometroCalorias");
                         	device.setValor(String.valueOf((int)mCaloriesValue));
                         	device.setUnidade("calorias");
                         	rest.PostService(device);
